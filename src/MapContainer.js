@@ -9,6 +9,19 @@ const MapContainer = () => {
   const [totalDistance, setTotalDistance] = useState(0);
 
   useEffect(() => {
+    const distanceCache = new Map();
+
+    function calculateDistanceAndCache(startPoint, endPoint) {
+      const cacheKey = `${startPoint.lat()}_${startPoint.lng()}_${endPoint.lat()}_${endPoint.lng()}`;
+      if (distanceCache.has(cacheKey)) {
+        return distanceCache.get(cacheKey);
+      }
+
+      const distance = window.google.maps.geometry.spherical.computeDistanceBetween(startPoint, endPoint);
+      distanceCache.set(cacheKey, distance);
+      return distance;
+    }
+
     function updateTotalDistance() {
       if (waypoints.length <= 1) {
         setTotalDistance(0);
@@ -19,7 +32,7 @@ const MapContainer = () => {
       for (let i = 1; i < waypoints.length; i++) {
         const startPoint = waypoints[i - 1].location;
         const endPoint = waypoints[i].location;
-        const distance = window.google.maps.geometry.spherical.computeDistanceBetween(startPoint, endPoint);
+        const distance = calculateDistanceAndCache(startPoint, endPoint);
         total += distance;
       }
 
